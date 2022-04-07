@@ -4,15 +4,19 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import ai.onnxruntime.NodeInfo;
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+import ai.onnxruntime.OrtUtil;
+import ai.onnxruntime.TensorInfo;
 
 public class ORTAnalyzer {
     OrtSession session;
@@ -26,40 +30,22 @@ public class ORTAnalyzer {
 
     public void dummyAnalyze() {
         OrtEnvironment ortEnvironment = OrtEnvironment.getEnvironment();
-        Set<String> inputNamesSet = session.getInputNames();
-        String[] inputNames = new String[inputNamesSet.size()];
-        inputNamesSet.toArray(inputNames);
-
-        Random random = new Random();
-
-        String inputName1 = inputNames[0];
-        long[] shape1 = new long[] {1, 128, 2};
-        // 生成 float[][][] 三维数组
-//        Object dummyArray1 =  OrtUtil.newFloatArray(shape1);
-        long totalLength1 = shape1[0] * shape1[1] * shape1[2];
-        FloatBuffer dummyInput1 = FloatBuffer.allocate((int) totalLength1);
-        for (int i = 0; i < totalLength1; i++) {
-            dummyInput1.put(random.nextFloat());
-        }
-        Log.d(TAG, inputName1);
-
-        String inputName2 = inputNames[1];
-        long[] shape2 = new long[] {1, 64, 96, 128};
-        long totalLength2 = shape2[0] * shape2[1] * shape2[2] * shape2[3];
-        FloatBuffer dummyInput2 = FloatBuffer.allocate((int) totalLength2);
-        for (int i = 0; i < totalLength2; i++) {
-            dummyInput2.put(random.nextFloat());
-        }
-        Log.d(TAG, inputName2);
-        Log.d(TAG, totalLength1 + " " + totalLength2);
-
-        dummyInput1.rewind();
-        dummyInput2.rewind();
 
         Map<String, OnnxTensor> inputMap = new HashMap<>();
         try {
-            inputMap.put(inputName1, OnnxTensor.createTensor(ortEnvironment, dummyInput1, shape1));
-            inputMap.put(inputName2, OnnxTensor.createTensor(ortEnvironment, dummyInput2, shape2));
+            Map<String, NodeInfo> inputInfoMap = session.getInputInfo();
+            for (Map.Entry<String, NodeInfo> entry : inputInfoMap.entrySet()) {
+                String inputName = entry.getKey();
+                TensorInfo tensorInfo = (TensorInfo) entry.getValue().getInfo();
+                Log.d(TAG, String.format("InputName: %s, JavaType: %s, ONNXType: %s, Shape: %s",
+                        inputName, tensorInfo.type, tensorInfo.onnxType, Arrays.toString(tensorInfo.getShape())));
+
+                long[] shape = tensorInfo.getShape();
+                Object dummyArray = OrtUtil.newFloatArray(shape);
+
+                OnnxTensor onnxTensor =OnnxTensor.createTensor(ortEnvironment, dummyArray);
+                inputMap.put(inputName, onnxTensor);
+            }
 
             for (int i = 0; i < warmupIterations; i++) {
                 long startTime = System.currentTimeMillis();

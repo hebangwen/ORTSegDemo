@@ -15,6 +15,7 @@ import java.util.EnumSet;
 
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
+import ai.onnxruntime.OrtProvider;
 import ai.onnxruntime.OrtSession;
 import ai.onnxruntime.providers.NNAPIFlags;
 
@@ -23,10 +24,19 @@ public class MainActivity extends AppCompatActivity {
     private OrtEnvironment mOrtEnvironment;
     private OrtSession.SessionOptions mSessionOptions;
 
+    int snakeResId = R.raw.gcn_with_runtime_opt;
+    int segFormerB0ResId = R.raw.segformer_b0_1024x1024;
+    String segFormerB5Path = "/data/local/tmp/segformer_b5_1024x1024.with_runtime_opt.ort";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        EnumSet<OrtProvider> providers = OrtEnvironment.getAvailableProviders();
+        for (OrtProvider provider : providers) {
+            Log.d(TAG, "ONNXRuntime available provider: " + provider);
+        }
 
         mOrtEnvironment = OrtEnvironment.getEnvironment();
         mSessionOptions = new OrtSession.SessionOptions();
@@ -34,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setORTAnalyzer() {
-        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession());
+        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession(segFormerB5Path));
 
         try {
             ortAnalyzer.dummyAnalyze();
@@ -50,14 +60,25 @@ public class MainActivity extends AppCompatActivity {
 //            mSessionOptions.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.PARALLEL);
     }
 
-    private OrtSession createSession() {
+    private OrtSession createSession(int resId) {
         try {
             configSessionOptions();
 
-            InputStream inputStream = getResources().openRawResource(R.raw.gcn_with_runtime_opt);
+            InputStream inputStream = getResources().openRawResource(resId);
             byte[] bytes = readBytes(inputStream);
             return mOrtEnvironment.createSession(bytes, mSessionOptions);
         } catch (OrtException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private OrtSession createSession(String modelPath) {
+        try {
+            configSessionOptions();
+            return mOrtEnvironment.createSession(modelPath, mSessionOptions);
+        } catch (OrtException e) {
             e.printStackTrace();
         }
 
