@@ -13,19 +13,20 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
-import ai.onnxruntime.OrtUtil;
 
 public class ORTAnalyzer {
     OrtSession session;
     String TAG = "ORTAnalyzer";
+    int inferenceIterations = 20;
+    int warmupIterations = 5;
 
     public ORTAnalyzer(OrtSession session) {
         this.session = session;
     }
 
-    public void analyze(Bitmap bitmap) {
+    public void dummyAnalyze() {
         OrtEnvironment ortEnvironment = OrtEnvironment.getEnvironment();
-        Set inputNamesSet = session.getInputNames();
+        Set<String> inputNamesSet = session.getInputNames();
         String[] inputNames = new String[inputNamesSet.size()];
         inputNamesSet.toArray(inputNames);
 
@@ -60,12 +61,22 @@ public class ORTAnalyzer {
             inputMap.put(inputName1, OnnxTensor.createTensor(ortEnvironment, dummyInput1, shape1));
             inputMap.put(inputName2, OnnxTensor.createTensor(ortEnvironment, dummyInput2, shape2));
 
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < warmupIterations; i++) {
+                long startTime = System.currentTimeMillis();
+                session.run(inputMap);
+                long endTime = System.currentTimeMillis();
+                Log.d(TAG, String.format("Warmup time cost: %d ms", endTime - startTime));
+            }
+
+            long inferenceStartTime = System.currentTimeMillis();
+            for (int i = 0; i < inferenceIterations; i++) {
                 long startTime = System.currentTimeMillis();
                 session.run(inputMap);
                 long endTime = System.currentTimeMillis();
                 Log.d(TAG, String.format("Time cost: %d ms", endTime - startTime));
             }
+            long inferenceEndTime = System.currentTimeMillis();
+            Log.d(TAG, String.format("Average time cost: %d ms", (inferenceEndTime - inferenceStartTime) / inferenceIterations));
         } catch (OrtException e) {
             e.printStackTrace();
         }

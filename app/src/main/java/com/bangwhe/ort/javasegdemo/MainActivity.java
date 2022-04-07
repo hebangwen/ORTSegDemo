@@ -34,22 +34,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setORTAnalyzer() {
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.frame_980_672x384);
         ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession());
 
         try {
-            ortAnalyzer.analyze(bitmap);
+            ortAnalyzer.dummyAnalyze();
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
     }
 
-    private OrtSession createSession() {
-        try {
+    private void configSessionOptions() throws OrtException {
 //            mSessionOptions.addNnapi();
-            mSessionOptions.setIntraOpNumThreads(4);
+        mSessionOptions.setIntraOpNumThreads(4);
 //            mSessionOptions.addNnapi(EnumSet.of(NNAPIFlags.USE_NCHW));
 //            mSessionOptions.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.PARALLEL);
+    }
+
+    private OrtSession createSession() {
+        try {
+            configSessionOptions();
 
             InputStream inputStream = getResources().openRawResource(R.raw.gcn_with_runtime_opt);
             byte[] bytes = readBytes(inputStream);
