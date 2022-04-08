@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     int snakeResId = R.raw.gcn_with_runtime_opt;
     int segFormerB0ResId = R.raw.segformer_b0_1024x1024;
+    int segFormerB0ONNXResId = R.raw.segformer_b0_1024x1024_onnx;
     String segFormerB5Path = "/data/local/tmp/segformer_b5_1024x1024.with_runtime_opt.ort";
 
     @Override
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setORTAnalyzer() {
-        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession(segFormerB5Path));
+        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession(segFormerB0ONNXResId));
 
         try {
             ortAnalyzer.dummyAnalyze();

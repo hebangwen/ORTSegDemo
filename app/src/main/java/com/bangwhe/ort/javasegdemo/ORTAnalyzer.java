@@ -47,6 +47,14 @@ public class ORTAnalyzer {
                 inputMap.put(inputName, onnxTensor);
             }
 
+            Map<String, NodeInfo> outputInfoMap = session.getOutputInfo();
+            for (Map.Entry<String, NodeInfo> entry : outputInfoMap.entrySet()) {
+                String outputName = entry.getKey();
+                TensorInfo tensorInfo = (TensorInfo) entry.getValue().getInfo();
+                Log.d(TAG, String.format("OutputName: %s, JavaType: %s, ONNXType: %s, Shape: %s",
+                        outputName, tensorInfo.type, tensorInfo.onnxType, Arrays.toString(tensorInfo.getShape())));
+            }
+
             for (int i = 0; i < warmupIterations; i++) {
                 long startTime = System.currentTimeMillis();
                 session.run(inputMap);
