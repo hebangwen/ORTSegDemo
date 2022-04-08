@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     int snakeResId = R.raw.gcn_with_runtime_opt;
     int segFormerB0ResId = R.raw.segformer_b0_1024x1024;
     int segFormerB0ONNXResId = R.raw.segformer_b0_1024x1024_onnx;
+    int mobilenetONNXResId = R.raw.mobilenetv2_7;
     String segFormerB5Path = "/data/local/tmp/segformer_b5_1024x1024.with_runtime_opt.ort";
 
     @Override
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setORTAnalyzer() {
-        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession(segFormerB0ONNXResId));
+        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession(mobilenetONNXResId));
 
         try {
             ortAnalyzer.dummyAnalyze();
@@ -55,10 +56,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configSessionOptions() throws OrtException {
-//            mSessionOptions.addNnapi();
-        mSessionOptions.setIntraOpNumThreads(4);
-//            mSessionOptions.addNnapi(EnumSet.of(NNAPIFlags.USE_NCHW));
-//            mSessionOptions.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.PARALLEL);
+//        mSessionOptions.addNnapi();  // use Android NNAPI, thus inference in GPU
+        mSessionOptions.setIntraOpNumThreads(4);  // set number of threads in CPU
     }
 
     private OrtSession createSession(int resId) {
