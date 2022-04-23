@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     int segFormerB0ONNXResId = R.raw.segformer_b0_1024x1024_onnx;
     int mobilenetONNXResId = R.raw.mobilenetv2_7;
     String segFormerB5Path = "/data/local/tmp/segformer_b5_1024x1024.with_runtime_opt.ort";
+    String e2ecPath = "/data/local/tmp/e2ec.with_runtime_opt.ort";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,11 +47,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setORTAnalyzer() {
-        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession(mobilenetONNXResId));
+        InputStream inputStream = getResources().openRawResource(R.raw.frame_980_640x360);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        ORTAnalyzer ortAnalyzer = new ORTAnalyzer(createSession(e2ecPath));
 
         try {
-            ortAnalyzer.dummyAnalyze();
-        } catch (NullPointerException e) {
+//            ortAnalyzer.dummyAnalyze();
+            ortAnalyzer.analyze(bitmap);
+        } catch (NullPointerException | OrtException e) {
             e.printStackTrace();
         }
     }
