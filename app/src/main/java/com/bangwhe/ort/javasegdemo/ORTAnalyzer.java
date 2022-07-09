@@ -28,7 +28,7 @@ public class ORTAnalyzer {
         this.session = session;
     }
 
-    public void dummyAnalyze() throws OrtException {
+    public void dummyAnalyze() {
         OrtEnvironment ortEnvironment = OrtEnvironment.getEnvironment();
 
         Map<String, OnnxTensor> inputMap = new HashMap<>();
@@ -57,7 +57,8 @@ public class ORTAnalyzer {
 
             for (int i = 0; i < warmupIterations; i++) {
                 long startTime = System.currentTimeMillis();
-                session.run(inputMap);
+                OrtSession.Result result = session.run(inputMap);
+                result.close();
                 long endTime = System.currentTimeMillis();
                 Log.d(TAG, String.format("Warmup time cost: %d ms", endTime - startTime));
             }
@@ -65,7 +66,8 @@ public class ORTAnalyzer {
             long inferenceStartTime = System.currentTimeMillis();
             for (int i = 0; i < inferenceIterations; i++) {
                 long startTime = System.currentTimeMillis();
-                session.run(inputMap);
+                OrtSession.Result result = session.run(inputMap);
+                result.close();
                 long endTime = System.currentTimeMillis();
                 Log.d(TAG, String.format("Time cost: %d ms", endTime - startTime));
             }
