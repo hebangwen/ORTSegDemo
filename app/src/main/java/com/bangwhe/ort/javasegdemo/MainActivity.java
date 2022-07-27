@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.renderscript.ScriptGroup;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private OrtEnvironment mOrtEnvironment;
     private OrtSession.SessionOptions mSessionOptions;
+    private TextView inferenceView;
 
     int snakeResId = R.raw.gcn_with_runtime_opt;
     int segFormerB0ResId = R.raw.segformer_b0_1024x1024;
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        inferenceView = findViewById(R.id.inference);
 
         EnumSet<OrtProvider> providers = OrtEnvironment.getAvailableProviders();
         for (OrtProvider provider : providers) {
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             ortAnalyzer.dummyAnalyze();
+            inferenceView.setText(String.format("inference time: %dms", ortAnalyzer.getInferenceTime()));
         } catch (NullPointerException e) {
             e.printStackTrace();
         }

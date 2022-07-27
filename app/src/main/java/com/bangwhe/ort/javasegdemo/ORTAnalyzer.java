@@ -23,6 +23,7 @@ public class ORTAnalyzer {
     String TAG = "ORTAnalyzer";
     int inferenceIterations = 20;
     int warmupIterations = 5;
+    long inferenceTime = 0;
 
     public ORTAnalyzer(OrtSession session) {
         this.session = session;
@@ -58,8 +59,8 @@ public class ORTAnalyzer {
             for (int i = 0; i < warmupIterations; i++) {
                 long startTime = System.currentTimeMillis();
                 OrtSession.Result result = session.run(inputMap);
-                result.close();
                 long endTime = System.currentTimeMillis();
+                result.close();
                 Log.d(TAG, String.format("Warmup time cost: %d ms", endTime - startTime));
             }
 
@@ -67,14 +68,19 @@ public class ORTAnalyzer {
             for (int i = 0; i < inferenceIterations; i++) {
                 long startTime = System.currentTimeMillis();
                 OrtSession.Result result = session.run(inputMap);
-                result.close();
                 long endTime = System.currentTimeMillis();
+                result.close();
                 Log.d(TAG, String.format("Time cost: %d ms", endTime - startTime));
             }
             long inferenceEndTime = System.currentTimeMillis();
-            Log.d(TAG, String.format("Average time cost: %d ms", (inferenceEndTime - inferenceStartTime) / inferenceIterations));
+            inferenceTime = (inferenceEndTime - inferenceStartTime) / inferenceIterations;
+            Log.d(TAG, String.format("Average time cost: %d ms", inferenceTime));
         } catch (OrtException e) {
             e.printStackTrace();
         }
+    }
+
+    public long getInferenceTime() {
+        return inferenceTime;
     }
 }
