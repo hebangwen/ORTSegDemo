@@ -1,5 +1,7 @@
 # ONNX Runtime Inference Demo
 
+## Java version
+
 Use ORT to inference model at Android device by Java. Inference time is 17ms.
 
 You can run this demo by following steps:
@@ -55,3 +57,12 @@ D/ORTAnalyzer: Time cost: 10 ms <br/>
 D/ORTAnalyzer: Average time cost: 11 ms <br/>
 ```
 </details>
+
+## C++ version
+
+The `libonnxruntime.so` library from `com.microsoft.onnxruntime:onnxruntime-android:1.11.0` used by the Java version 
+is the same as the one used by the c++ version. Thus, we can't merge the two submodules together.
+
+Use the prebuilt `libonnxruntime.so` library which is directly copied from the `onnxruntime-android`(1.11.0) aar file. 
+The only thing which makes it different from the Java version is that it can only use a file path instead of a resource id.
+What's more, due to the JNI performance loss, the latency of c++ version will be slightly lower than the latency of Java version.

@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+*gcn*.onnx
+*nanodet_fuse*.onnx
